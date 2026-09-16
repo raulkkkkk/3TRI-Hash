@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança Digital: Criptografia vs Hash</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        input[type="text"] {
+            width: calc(100% - 24px);
+            max-width: 400px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .console {
+            background-color: #1e1e1e;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .badge-success {
+            background: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔒 Segurança Digital: Criptografia vs Hash</h1>
+    <p>Projeto interativo desenvolvido com base nas aulas de Segurança Digital da <strong>Alura</strong>.</p>
+
+    <!-- SEÇÃO 1: CRIPTOGRAFIA POR SUBSTITUIÇÃO -->
+    <div class="card">
+        <h2>1. Criptografia por Substituição <span class="badge">Insegura</span></h2>
+        <p>Substitui letras por outras com base em um dicionário. Fácil de decifrar via análise de padrões.</p>
+        <input type="text" id="textoSubstituicao" value="marcelo" placeholder="Digite uma palavra">
+        <button onclick="testarSubstituicao()">Testar Substituição</button>
+        <p><strong>Resultado Cifrado:</strong> <span id="resultadoSubstituicao">-</span></p>
+    </div>
+
+    <!-- SEÇÃO 2: GERADOR DE HASH -->
+    <div class="card">
+        <h2>2. Algoritmo de Hash Simples (Soma ASCII) <span class="badge badge-success">Irreversível</span></h2>
+        <p>Converte a entrada em um valor numérico somando o código ASCII de cada caractere.</p>
+        <input type="text" id="senhaHash" value="olecram" placeholder="Digite uma senha">
+        <button onclick="testarHash()">Calcular Hash</button>
+        
+        <h3>Log de Execução (Passo a Passo):</h3>
+        <div id="consoleLog" class="console">Clique em "Calcular Hash" para ver a execução...</div>
+    </div>
+
+    <!-- SEÇÃO 3: DEMONSTRAÇÃO DE COLISÃO -->
+    <div class="card">
+        <h2>3. Teste de Colisão e Irreversibilidade</h2>
+        <p>Veja como duas entradas diferentes podem gerar o mesmo Hash, provando que não é possível "desfazer" o processo:</p>
+        <button onclick="testarColisao()">Executar Teste ('roma' vs 'amor')</button>
+        <div id="colisaoLog" class="console">Aguardando teste...</div>
+    </div>
+
+    <script>
+        // 1. Criptografia por Substituição
+        function cifraSubstituicao(texto) {
+            const dicionario = {
+                'a': 'q', 'b': 'w', 'c': 'e', 'd': 'r', 'e': 't',
+                'f': 'y', 'g': 'u', 'h': 'i', 'i': 'o', 'j': 'p',
+                'l': 'p', 'm': 'a', 'o': 'x', 'r': 'z'
+            };
+            
+            return texto.toLowerCase().split('').map(letra => dicionario[letra] || letra).join('');
+        }
+
+        function testarSubstituicao() {
+            const input = document.getElementById('textoSubstituicao').value;
+            const resultado = cifraSubstituicao(input);
+            document.getElementById('resultadoSubstituicao').innerText = resultado;
+        }
+
+        // 2. Função de Hash (ASCII)
+        function calculaHash(senha) {
+            let valorTotal = 0;
+            let log = `Iniciando cálculo para: "${senha}"\n-----------------------------------\n`;
+            
+            for (let i = 0; i < senha.length; i++) {
+                let asciiVal = senha.charCodeAt(i);
+                valorTotal += asciiVal;
+                log += `Caractere: '${senha[i]}' -> ASCII: ${asciiVal} | Soma acumulada: ${valorTotal}\n`;
+            }
+            
+            log += `-----------------------------------\nValor Final do Hash: ${valorTotal}`;
+            return { valorTotal, log };
+        }
+
+        function testarHash() {
+            const input = document.getElementById('senhaHash').value;
+            const res = calculaHash(input);
+            document.getElementById('consoleLog').innerText = res.log;
+        }
+
+        // 3. Teste de Colisão
+        function testarColisao() {
+            const p1 = "roma";
+            const p2 = "amor";
+            
+            const h1 = calculaHash(p1).valorTotal;
+            const h2 = calculaHash(p2).valorTotal;
+            
+            let saida = `Palavra 1: "${p1}" -> Hash: ${h1}\n`;
+            saida += `Palavra 2: "${p2}" -> Hash: ${h2}\n\n`;
+            saida += `Mesmo Hash gerado? ${h1 === h2 ? "SIM (Ocorreu uma Colisão!)" : "NÃO"}\n`;
+            saida += `--------------------------------------------------\n`;
+            saida += `Explicação: Como a ordem dos fatores não altera a soma,\n`;
+            saida += `entradas com as mesmas letras geram o mesmo resultado.\n`;
+            saida += `Isso impede descobrir a senha original apenas olhando o Hash!`;
+            
+            document.getElementById('colisaoLog').innerText = saida;
+        }
+    </script>
+</body>
+</html>
